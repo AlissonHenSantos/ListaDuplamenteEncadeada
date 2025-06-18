@@ -11,7 +11,7 @@ class LinkedList{
 
     addFirst(novoDado){
         const novoNo = new No(novoDado);
-        if(this.#head==null)
+        if(this.#head===null)
             this.#tail = novoNo;
         else{
             novoNo.proximo = this.#head;
@@ -36,26 +36,38 @@ class LinkedList{
         return true;
     }
 
-   addAtIndex(index, dado){
-        const novoNo = new No(dado)
-        if(this.isEmpty() || index <= 1)
-            return this.addFirst(novoNo)
-        if(index > this.#qtd)
-            return this.addLast(novoNo)
-
-        let noAux = this.#head
-        let posicao = 0
-        while(posicao != index - 1){
-            noAux = noAux.proximo
-            posicao++
+    addAtIndex(index, novoDado){
+        const novoNo = new No(novoDado);
+        let aux = this.#head;
+        let pos = 0;
+        while(pos < index - 1){
+            aux = aux.proximo;
+            pos++;
         }
-            novoNo.anterior = noAux
-            novoNo.proximo = noAux.proximo
-            novoNo.anterior.proximo = novoNo
-            novoNo.proximo.anterior = novoNo
+        novoNo.anterior = aux;
+        novoNo.proximo = aux.proximo;
+        aux.proximo = novoNo;
+        novoNo.proximo.anterior = novoNo;
+        this.#qtd++;
+        return true;
+    } 
 
-        this.#qtd++
-   }
+     removeAtIndex(index) {
+        let atual = this.#head;
+        let pos = 0;
+        while (pos < index) {
+            atual = atual.proximo;
+            pos++;
+        }
+
+        const anterior = atual.anterior;
+        const proximo = atual.proximo;
+        anterior.proximo = proximo;
+        proximo.anterior = anterior;
+        this.#qtd--;
+        return atual.dado;
+} 
+
 
     removeFirst(){
         const dadoRemovido = this.#head.dado;
@@ -71,10 +83,10 @@ class LinkedList{
     removeLast(){
         const dadoRemovido = this.#tail.dado;
         this.#tail = this.#tail.anterior;
-        if(this.#tail!=null)
+        if(this.#tail!==null)
             this.#tail.proximo = null;
         else
-          this.#head = null;
+            this.#head = null;
         this.#qtd--;
         return dadoRemovido;
     }
@@ -82,7 +94,7 @@ class LinkedList{
     getLast(){
       return this.#tail.dado;
     }
-     getFirst(){
+    getFirst(){
         return this.#head.dado;
      }
     isEmpty(){
@@ -120,7 +132,5 @@ class LinkedList{
           }
           return result;
       }
-   //----------------  
-
-   
+   //----------------   
     }

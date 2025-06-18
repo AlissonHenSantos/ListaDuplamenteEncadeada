@@ -4,7 +4,6 @@ const minhaLista = new LinkedList();
 function limpaInputs() {
     document.getElementById("txtnovaTarefa").value = "";
     document.getElementById("txtnovaPrioridade").value = "";
-    document.getElementById("txtIndice").value = "";
     document.getElementById("txtnovaTarefa").focus();
 }
 //--------------------------------------------------------------------------------------------
@@ -21,40 +20,107 @@ function leiaDadosTarefa() {
  function adicionarElementoInicio() {
     const novaTarefa = leiaDadosTarefa();
     if(novaTarefa!=null){
-      minhaLista.addFirst(novaTarefa);
-      console.log(minhaLista.toString());
-      limpaInputs();
-      atualizarLista();
+    minhaLista.addFirst(novaTarefa);
+    console.log(minhaLista.toString());
+    limpaInputs();
+    atualizarLista();
     }
  }
  //------------------------------------------------------------------------------------------------------
   function adicionarElementoFinal() {
     const novaTarefa = leiaDadosTarefa();
-    if(novaTarefa!=null){
-      minhaLista.addLast(novaTarefa);
-      console.log(minhaLista.toString());
-      limpaInputs();
-      atualizarLista();
+    if(novaTarefa!=null){  
+    minhaLista.addLast(novaTarefa);
+    console.log(minhaLista.toString());
+    limpaInputs();
+    atualizarLista();
     }
   }
   //--------------------------------------------------------------------------------------------
-  function adicionarIndice() {
-        const novaTarefa = leiaDadosTarefa();
-        const indice =  document.getElementById("txtIndice").value;
-
+  function adicionarIndice(){
+    const novaTarefa = leiaDadosTarefa();
+    const indice = document.getElementById("txtIndice").value.trim();
     if(novaTarefa!=null){
       minhaLista.addAtIndex(indice, novaTarefa);
       console.log(minhaLista.toString());
       limpaInputs();
       atualizarLista();
     }
+    
   }
+//--------------------------------------------------------------------------------------------
+  function inserirPrioridade() {
+    const novaTarefa = leiaDadosTarefa();
+    if (novaTarefa != null){
+    const novaPrioridade = document.getElementById("txtnovaPrioridade").value.trim();
+      if(minhaLista.isEmpty() ){
+         minhaLista.addFirst(novaTarefa);
+      }
+     else if(novaPrioridade < minhaLista.getFirst().prioridade ){
+       minhaLista.addFirst(novaTarefa);
+    }
+    else if(novaPrioridade >= minhaLista.getLast().prioridade){
+       minhaLista.addLast(novaTarefa);
+    } else{ 
+
+    let index = 0;
+    for (const tarefa of minhaLista) {
+        const prioridadeAtual = tarefa.prioridade;
+        if (novaPrioridade < prioridadeAtual) {
+            break;
+        }
+        index++;
+    }
+    minhaLista.addAtIndex(index, novaTarefa); 
+     }
+    console.log(minhaLista.toString());
+    limpaInputs();
+    atualizarLista();
+  }
+}
+//--------------------------------------------------------------------------------------------
+function mostrarElementoInicio() {
+    if(!minhaLista.isEmpty()){
+      const tarefaRealizada = minhaLista.getFirst();
+      const mensagem = document.getElementById("mensagem-remocao");
+      mensagem.innerHTML ="Proxima tarefa a ser realizada: "+ tarefaRealizada.descricao;
+      mensagem.style.display = "block";
+    }
+    else{
+      alert("Lista de Tarefas Vazia");
+    }
+   
+ }
+//--------------------------------------------------------------------------------------------
+  function mostrarTarefaAntiga(){
+  let tarefaAntiga = null;
+  if(!minhaLista.isEmpty()){
+    for (const tarefa of minhaLista) {
+      if (tarefaAntiga === null) {
+        tarefaAntiga = tarefa;
+      } else {
+        tarefaAntiga = comparaTarefasDataHora(tarefaAntiga, tarefa);
+      }
+    }
+    const mensagem = document.getElementById("mensagem-remocao");
+    mensagem.innerHTML = "Tarefa mais antiga registrada -- " +tarefaAntiga;
+    mensagem.style.display = "block";}
+    else{
+      alert("Lista de Tarefas Vazia");
+    }
+
+}
+
 //--------------------------------------------------------------------------------------------
  // Função para remover o primeiro elemento da lista
  function removerElementoInicio() {
     if(!minhaLista.isEmpty()){
       const tarefaRealizada = minhaLista.removeFirst();
-      mostrarMensagemRemocao(tarefaRealizada);
+      const hora = obterHoraAtual();
+      const data = obterDataAtual();
+      const diferencaHoras = calcularDiferencaHoras(tarefaRealizada.hora, hora);
+      const diferencaDias = calcularDiferencaDias(tarefaRealizada.data, data);
+      mostrarMensagemRemocao(tarefaRealizada, diferencaHoras, diferencaDias);
       atualizarLista();
     }
     else{
@@ -73,27 +139,63 @@ function leiaDadosTarefa() {
     else{
       alert("Lista de Tarefas Vazia");
     }
- }
+}
+//------------------------------------------------------------------------------------------------
+function removerTarefaPorIndice(index) {
+  if (!minhaLista.isEmpty()) {
+    let tarefaRemovida = null;
+    if(index === 0){
+      tarefaRemovida  = minhaLista.removeFirst();
+    }
+    else if(index === minhaLista.length - 1){
+      tarefaRemovida = minhaLista.removeLast();
+    } 
+    else{
+      tarefaRemovida = minhaLista.removeAtIndex(index);
+    }
+    const agora = obterHoraAtual();
+    const hoje = obterDataAtual();
+    const segundos = calcularDiferencaHoras(agora, tarefaRemovida.hora);
+    const dias = calcularDiferencaDias(tarefaRemovida.data, hoje);
+
+    mostrarMensagemRemocao(tarefaRemovida, segundos, dias);
+    atualizarLista();
+  } else {
+    alert("Lista de Tarefas Vazia");
+  }
+}
+
+
 //--------------------------------------------------------------------------------------------
-function mostrarMensagemRemocao(tarefaRealizada) {
+function mostrarMensagemRemocao(tarefaRealizada, hora, data) {
     const mensagem = document.getElementById("mensagem-remocao");
-    mensagem.innerHTML ="Tarefa realizada: "+ tarefaRealizada.descricao;
+    mensagem.innerHTML ="Tarefa realizada: "+ tarefaRealizada.descricao + " -- Levou "+data+ " dias e "+ hora + " segundos";
     mensagem.style.display = "block";
   }
 //-------------------------------------------------------------------------------------------- 
 // Função para atualizar a exibição da fila
  function atualizarLista() {
-   const listaTarefas = 
-       document.getElementById("list_listadeTarefas");
-   const lblTarefas = 
-          document.getElementById("lblmostraTarefas");
+   const listaTarefas = document.getElementById("list_listadeTarefas");
+   const lblTarefas = document.getElementById("lblmostraTarefas");
    listaTarefas.innerHTML = "";    // limpar antes de mostrar
    if(!minhaLista.isEmpty()){
       lblTarefas.innerHTML = "Lista de Tarefas";
+      let index = 0;
       for(const tarefa of minhaLista){
           const novaLinha = document.createElement("li");
           novaLinha.innerHTML = tarefa.toString();
+          novaLinha.style.cursor = "pointer";
+          novaLinha.addEventListener("click", ((i) => 
+          { 
+            return () => { const confirmacao = confirm("Deseja remover a tarefa selecionada?");
+          if (confirmacao) {
+            removerTarefaPorIndice(i);
+            atualizarLista();
+          }
+        };
+      })(index));
           listaTarefas.appendChild(novaLinha);
+          index++;
       }
    }
    else{

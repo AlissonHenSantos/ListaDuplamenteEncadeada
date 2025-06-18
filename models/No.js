@@ -1,9 +1,8 @@
- class No{
+class No{
   #dado;
   #anterior;
   #proximo;
   
-    
   constructor (novoDado){
         this.#dado = novoDado;
         this.#anterior = null;
